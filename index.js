@@ -27,6 +27,72 @@ module.exports = () => {
 
 
 	vorpal
+		.command('a', 'Adds with prompting for data')
+		.action(function(args, callback) {
+			const self = this
+			return promptedAdd(this, args, callback)
+		})
+
+
+	vorpal
+		.command('edit', 'Edit an existing item')
+		.action(function(args, callback) {
+			const self = this
+			selectItem(this, args, callback)
+		})
+
+function selectItem(selfthis, args, callback) {
+	var datachoices = []	
+	data.forEach(function(item, index) {
+		THIS IS WHERE I"M AT ------var i = {
+			'name': item.subject
+			'value': item.subject
+			'short': item.subject
+		}
+		datachoices.push(i)	
+	})
+
+	selfthis.prompt (
+		{
+			type: 'list',
+			name: 'item',
+			message: 'Select item: ',
+			choices: datachoices	
+		},
+		function(result) {
+			console.log(result.item)
+		}
+	)
+}
+
+function promptedAdd(selfthis, args, callback) {
+
+	return selfthis.prompt (
+		[	{
+				type: 'input', 
+				name: 'begin',
+				message: 'Enter start time: '
+			},
+			{
+				type: 'input',
+				name: 'end',
+				message: 'Enter end time: '
+			},
+			{
+				type: 'input',
+				name: 'subject',
+				message: 'Enter subject: '
+			}
+		],
+		function(result) {
+			addEntry(result)
+			refreshView()
+			callback()
+	})
+}
+
+
+	vorpal
 		.command('refresh', 'Refreshes the screen')
 		.alias('r')
 		.action(function(args, callback) {
@@ -114,7 +180,6 @@ function addEntry(options) {
 		end: b,
 		subject: options.subject
 	} 
-console.log(entry)
 	data.push(entry)
 }
 
