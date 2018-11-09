@@ -3,7 +3,7 @@ const chalk = require('chalk')
 const boxen = require('boxen')
 const vorpal = require('vorpal')()
 const fs = require('fs')
-var data = []  //= initializeData()
+var data = [] 
 
 module.exports = () => {
 
@@ -35,32 +35,86 @@ module.exports = () => {
 
 
 	vorpal
-		.command('edit', 'Edit an existing item')
+		.command('edit <changeProperty>', 'Edit an existing item (parm: start, end, or subject)')
+		.validate(function(args) {
+			if ((args.changeProperty === "start") || (args.changeProperty === "end") || (args.changeProperty === "subject")) {
+				return true
+			} else {
+				return 'Must provide either start, end, or subject'	
+			}
+		})
 		.action(function(args, callback) {
 			const self = this
-			selectItem(this, args, callback)
+			editItem(this, args, callback)
 		})
 
-function selectItem(selfthis, args, callback) {
-	var datachoices = []	
+	vorpal
+		.command('delete', 'Removes item from list user selects from')
+		.action(function(args, callback) {
+			const self = this
+			deleteItem(this, args, callback)
+		})
+
+
+function getDataChoices() {
+	var datachoices = []
+
 	data.forEach(function(item, index) {
-		THIS IS WHERE I"M AT ------var i = {
-			'name': item.subject
-			'value': item.subject
+		var i = {
+			'name': item.subject,
+			'value': item.subject,
 			'short': item.subject
 		}
 		datachoices.push(i)	
 	})
+	return datachoices
+}
+
+function deleteItem(selfthis, args, callback) {
+	var datachoices = getDataChoices()
 
 	selfthis.prompt (
+
 		{
 			type: 'list',
 			name: 'item',
 			message: 'Select item: ',
 			choices: datachoices	
 		},
+		
 		function(result) {
-			console.log(result.item)
+			var i = data.findIndex(obj => obj.subject == result.item)
+		        data.splice(i, 1)	
+			refreshView()
+			callback()
+		}
+	)
+
+}
+
+function editItem(selfthis, args, callback) {
+	var datachoices = getDataChoices()
+
+	selfthis.prompt (
+		[
+			{
+				type: 'list',
+				name: 'item',
+				message: 'Select item: ',
+				choices: datachoices	
+			},
+			{
+				type: 'input',
+				name: 'choicevalue',
+				message: 'New value for ' + args.changeProperty + ': '
+			}
+		],
+		function(result) {
+			var i = data.findIndex(obj => obj.subject == result.item)
+			console.log(i)
+			data[i][args.changeProperty] = result.choicevalue 
+			refreshView()
+			callback()
 		}
 	)
 }
@@ -128,7 +182,7 @@ function promptedAdd(selfthis, args, callback) {
 
 
 
-//	refreshView()
+	refreshView()
 
 
 	vorpal
@@ -140,34 +194,44 @@ function promptedAdd(selfthis, args, callback) {
 function refreshView() {
  	console.log('\033c')	
 	var c = getHeader() 
+
 	getData().forEach(function(item, index) {
 		c += '\n' + getBoxen(item)
 	})
 
-	console.log(boxen(c, {padding: 0, align: 'left'}))
+	console.log(boxen(c, {padding: 0, align: 'left', backgroundColor: 'black'}))
 }
 
-//function UseLaterpromptItem(v) {
-//	self = v
-//	self.prompt( {
-//		type: 'input',
-//		name: 'start',
-//		message: 'Start Date: '
-//	},
-//	function (result) {
-//		console.log('did something')
-//	})
-//}
 function getHeader() {
 	var formatObject = {align: 'left', float: 'left', padding: 3, borderStyle: 'round', borderColor: 'black', backgroundColor: 'blue'}
-
-	return boxen("-----------------------------------------------------" + '\n' + 'asdf' + '\n' +
+	var rightNow = new Date()
+	return boxen("-----------------------------------------------------" + '\n' + rightNow + '\n' +
                      "-----------------------------------------------------", formatObject)
 }
 
 function getBoxen(itemObject) {
-	var formatObject = {padding: 1, borderStyle: 'round', borderColor: 'black', backgroundColor: 'red'}
-	return boxen(itemObject.start + ' - ' + itemObject.end + ' : ' + itemObject.subject, formatObject)	
+	var today = new Date()
+	var start = new Date('1/1/1970 ' + itemObject.start)
+	var end = new Date('1/1/1970 ' + itemObject.end)
+	var desc = itemObject.start + ' - ' + itemObject.end + ' : ' + itemObject.subject
+	var bgcolor = ''
+	var padding = 0
+
+	if (end.getHours() > today.getHours()) {
+		padding = 1
+		bgcolor = 'green'
+		if (today.getHours() < start.getHours()) {
+			bgcolor = 'red'
+		}
+	} else {
+		padding = 0
+		bgcolor = 'black'
+		desc = chalk.gray(desc)
+	}
+
+	var formatObject = {padding: padding, borderStyle: 'round', borderColor: 'black', backgroundColor: bgcolor }
+
+	return boxen(desc, formatObject)	
 
 }
 
@@ -195,6 +259,7 @@ function getData() {
 }
 
 
+// Test data if need to load up
 function initializeData() {
 	return [
 		{
