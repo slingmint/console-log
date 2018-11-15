@@ -56,6 +56,96 @@ module.exports = () => {
 		})
 
 
+	vorpal
+		.command('refresh', 'Refreshes the screen')
+		.alias('r')
+		.action(function(args, callback) {
+			refreshView()
+			callback()
+		})
+
+
+
+	vorpal
+		.command('load', 'Loads last save file')
+		.action(function(args, callback) {
+			data = fs.readFileSync(DATAFILE, 'utf-8')
+			data =  JSON.parse(data)
+			refreshView()
+			callback()
+		})
+
+	vorpal
+		.command('save', 'Saves to file')
+		.action(function(args, callback) {
+			var jsondata = JSON.stringify(data)
+
+			fs.writeFile(DATAFILE, jsondata, 'utf-8', function(err) {
+				if (err) {
+					console.log("Error saving file.")
+					return console.log(err)
+				}
+			})	
+			console.log(chalk.red('Datafile saved.'))
+			callback()		
+		})
+
+
+
+	refreshView()
+
+
+	vorpal
+		.delimiter('CL-CAL#')
+		.show()
+}
+
+
+function refreshView() {
+ 	console.log('\033c')	
+	var c = getHeader() 
+
+	getData().forEach(function(item, index) {
+		c += '\n' + getBoxen(item)
+	})
+
+	console.log(boxen(c, {padding: 0, align: 'left', backgroundColor: 'black'}))
+}
+
+function getHeader() {
+	var formatObject = {align: 'left', float: 'left', padding: 3, borderStyle: 'round', borderColor: 'black', backgroundColor: 'blue'}
+	var rightNow = new Date()
+	return boxen("---------------------------------------------------------" + '\n' + rightNow + '\n' +
+                     "---------------------------------------------------------", formatObject)
+}
+
+function getBoxen(itemObject) {
+	var today = new Date()
+	var start = new Date('1/1/1970 ' + itemObject.start)
+	var end = new Date('1/1/1970 ' + itemObject.end)
+	var desc = itemObject.start + ' - ' + itemObject.end + ' : ' + itemObject.subject
+	var bgcolor = ''
+	var padding = 0
+
+	if ((end.getHours() > today.getHours()) || ((end.getHours() == today.getHours()) && (end.getMinutes() >= today.getMinutes()))) {
+		padding = 1
+		bgcolor = 'green'
+
+		if (today.getHours() < start.getHours()) {
+			bgcolor = 'red'
+		}
+	} else {
+		padding = 0
+		bgcolor = 'black'
+		desc = chalk.gray(desc)
+	}
+
+	var formatObject = {padding: padding, borderStyle: 'round', borderColor: 'black', backgroundColor: bgcolor }
+
+	return boxen(desc, formatObject)	
+
+}
+
 function getDataChoices() {
 	var datachoices = []
 
@@ -146,95 +236,6 @@ function promptedAdd(selfthis, args, callback) {
 }
 
 
-	vorpal
-		.command('refresh', 'Refreshes the screen')
-		.alias('r')
-		.action(function(args, callback) {
-			refreshView()
-			callback()
-		})
-
-
-
-	vorpal
-		.command('load', 'Loads last save file')
-		.action(function(args, callback) {
-			data = fs.readFileSync(DATAFILE, 'utf-8')
-			data =  JSON.parse(data)
-			refreshView()
-			callback()
-		})
-
-	vorpal
-		.command('save', 'Saves to file')
-		.action(function(args, callback) {
-			var jsondata = JSON.stringify(data)
-
-			fs.writeFile(DATAFILE, jsondata, 'utf-8', function(err) {
-				if (err) {
-					console.log("Error saving file.")
-					return console.log(err)
-				}
-			})	
-			console.log(chalk.red('Datafile saved.'))
-			callback()		
-		})
-
-
-
-	refreshView()
-
-
-	vorpal
-		.delimiter('CL-CAL#')
-		.show()
-}
-
-
-function refreshView() {
- 	console.log('\033c')	
-	var c = getHeader() 
-
-	getData().forEach(function(item, index) {
-		c += '\n' + getBoxen(item)
-	})
-
-	console.log(boxen(c, {padding: 0, align: 'left', backgroundColor: 'black'}))
-}
-
-function getHeader() {
-	var formatObject = {align: 'left', float: 'left', padding: 3, borderStyle: 'round', borderColor: 'black', backgroundColor: 'blue'}
-	var rightNow = new Date()
-	return boxen("-----------------------------------------------------" + '\n' + rightNow + '\n' +
-                     "-----------------------------------------------------", formatObject)
-}
-
-function getBoxen(itemObject) {
-	var today = new Date()
-	var start = new Date('1/1/1970 ' + itemObject.start)
-	var end = new Date('1/1/1970 ' + itemObject.end)
-	var desc = itemObject.start + ' - ' + itemObject.end + ' : ' + itemObject.subject
-	var bgcolor = ''
-	var padding = 0
-
-	if (end.getHours() > today.getHours()) {
-		padding = 1
-		bgcolor = 'green'
-		if (today.getHours() < start.getHours()) {
-			bgcolor = 'red'
-		}
-	} else {
-		padding = 0
-		bgcolor = 'black'
-		desc = chalk.gray(desc)
-	}
-
-	var formatObject = {padding: padding, borderStyle: 'round', borderColor: 'black', backgroundColor: bgcolor }
-
-	return boxen(desc, formatObject)	
-
-}
-
 function addEntry(options) {
 	var a = options.begin.toString().replace(/\b(\d{1,2})(\d{2})/g, '$1:$2') 
 	var b = options.end.toString().replace(/\b(\d{1,2})(\d{2})/g, '$1:$2') 
@@ -254,7 +255,17 @@ function getData() {
 		var da = new Date('1970-01-01T' + a.start + 'Z')
 		var db = new Date('1970-01-01T' + b.start + 'Z')
 
-		return (da.getTime() > db.getTime()) ? 1 : ((db.getTime() > da.getTime()) ? -1 : 0)
+		var astring = da.getTime()
+		var bstring = db.getTime()
+
+		if (astring > bstring) {
+			return 1
+		}
+		if (bstring > astring) {
+			return -1
+		}
+
+		return 0
 	})
 }
 
