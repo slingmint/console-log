@@ -3,6 +3,7 @@ const chalk = require('chalk')
 const boxen = require('boxen')
 const vorpal = require('vorpal')()
 const fs = require('fs')
+const main = require('./app/main.js')
 var data = [] 
 
 module.exports = () => {
@@ -90,10 +91,15 @@ module.exports = () => {
 			callback()		
 		})
 
+	vorpal
+		.command('test', 'Test Utility')
+		.action(function(args, callback) {
 
+			main()
+			callback()
+		})
 
 	refreshView()
-
 
 	vorpal
 		.delimiter('CL-CAL#')
