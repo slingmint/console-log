@@ -6,18 +6,21 @@ module.exports = function () {
 	console.log('In MAIN')
 
 	var tenant = 'common' // 'console-log-az'
-	var appid = ''
-	var pwd = ''
-
+	var appid = '3ea2d536-f5c6-480f-b5fb-569e7d7f4aeb'
+	var pwd = 'zbYDHA4^~ngmozSZK6352[_'
+	var authentication_url = 'https://login.microsoftonline.com/' + tenant + '/oauth2/token'
+	var authentication_resource = 'https://management.azure.com'
 
 	var options = {
-		url:'https://login.microsoftonline.com/' + tenant + '/oauth2/token',
+		url: authentication_url,
 		method:'POST',
 		formData: {
-			grant_type:'client_credentials',
+			grant_type:'authorization_code',
+//			grant_type:'client_credentials',
 			client_id:appid,
 			client_secret:pwd,
-			resource:'https://management.azure.com/'
+//			resource:authentication_resource
+			scope:'user.read mail.read'
 		},
 		headers: {
 		}
@@ -29,7 +32,7 @@ var token = ''
 
 
 	var options2 = {
-		url: 'https://outlook.office.com/api/v2.0/me/tasks',
+		url: 'https://graph.microsoft.com/v1.0/me/messages',
 		method: 'GET'
 		//headers: {
 	//		Authorization: 'Bearer ' + token,
