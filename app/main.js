@@ -5,9 +5,9 @@ module.exports = function () {
 
 	console.log('In MAIN')
 
-	var tenant = 'common' // 'console-log-az'
-	var appid = '3ea2d536-f5c6-480f-b5fb-569e7d7f4aeb'
-	var pwd = 'zbYDHA4^~ngmozSZK6352[_'
+	var tenant ='' 
+	var appid ='' 
+	var pwd ='' 
 	var authentication_url = 'https://login.microsoftonline.com/' + tenant + '/oauth2/token'
 	var authentication_resource = 'https://management.azure.com'
 

@@ -119,10 +119,10 @@ function refreshView() {
 }
 
 function getHeader() {
-	var formatObject = {align: 'left', float: 'left', padding: 3, borderStyle: 'round', borderColor: 'black', backgroundColor: 'blue'}
+	var formatObject = {align: 'left', float: 'left', padding: 2, borderStyle: 'round', borderColor: 'black', backgroundColor: 'blue'}
 	var rightNow = new Date()
-	return boxen("---------------------------------------------------------" + '\n' + rightNow + '\n' +
-                     "---------------------------------------------------------", formatObject)
+	return boxen(Array(58).join("-") + "\n" + rightNow + "\n" + 
+			Array(58).join("-"), formatObject)
 }
 
 function getBoxen(itemObject) {
@@ -132,9 +132,22 @@ function getBoxen(itemObject) {
 	var desc = itemObject.start + ' - ' + itemObject.end + ' : ' + itemObject.subject
 	var bgcolor = ''
 	var padding = 0
+	var durationpad = 1
+	var duration = 0
 
 	if ((end.getHours() > today.getHours()) || ((end.getHours() == today.getHours()) && (end.getMinutes() >= today.getMinutes()))) {
-		padding = 1
+
+		duration = (end - start) / (1000 * 60)
+
+		if (duration % 30 == 0) {
+			durationpad = duration / 30
+		}
+
+		if (desc.length <= 58) {
+			desc = desc + Array(64-desc.length).join(" ")
+		}
+
+		padding = {top:durationpad, bottom: durationpad, left: 3, right: 3} 
 		bgcolor = 'green'
 
 		if (today.getHours() < start.getHours()) {
@@ -146,7 +159,7 @@ function getBoxen(itemObject) {
 		desc = chalk.gray(desc)
 	}
 
-	var formatObject = {padding: padding, borderStyle: 'round', borderColor: 'black', backgroundColor: bgcolor }
+	var formatObject = {margin: 0, padding: padding, borderStyle: 'round', borderColor: 'black', backgroundColor: bgcolor}
 
 	return boxen(desc, formatObject)	
 
